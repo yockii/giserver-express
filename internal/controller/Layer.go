@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path"
 	"strconv"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	logger "github.com/sirupsen/logrus"
@@ -134,6 +135,11 @@ func (c *layerController) TileFile(ctx *fiber.Ctx) error {
 	fold := ctx.Params("fold")
 	file := ctx.Params("file")
 	if data.DataStoreTypeId == 0 {
+		if strings.HasSuffix(file, ".s3mb") {
+			ctx.Response().Header.SetContentType("application/s3mb")
+		} else if strings.HasSuffix(file, ".s3m") {
+			ctx.Response().Header.SetContentType("application/s3m")
+		}
 		return ctx.SendFile(path.Join(data.DataConfigPath, fold, file))
 	}
 	return ctx.SendStatus(fiber.StatusNotFound)

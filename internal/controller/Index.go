@@ -10,7 +10,6 @@ import (
 func InitRouter() {
 	space := server.Group("/space")
 	space.Get("/:spaceName", SpaceController.SpaceInfo)
-	space.Get("/:spaceName/scenes.json", SpaceController.SpaceInfo)
 	space.Post("/", SpaceController.Add)
 
 	scene := server.Group("/scene")
