@@ -135,12 +135,16 @@ func (c *layerController) TileFile(ctx *fiber.Ctx) error {
 	fold := ctx.Params("fold")
 	file := ctx.Params("file")
 	if data.DataStoreTypeId == 0 {
+		header := ctx.Response().Header
 		if strings.HasSuffix(file, ".s3mb") {
-			ctx.Response().Header.SetContentType("application/s3mb")
+			header.SetContentType("application/s3mb")
 		} else if strings.HasSuffix(file, ".s3m") {
-			ctx.Response().Header.SetContentType("application/s3m")
+			header.SetContentType("application/s3m")
 		}
-		return ctx.SendFile(path.Join(data.DataConfigPath, fold, file))
+		header.Set(fiber.HeaderConnection, "keep-alive")
+		header.Set(fiber.HeaderKeepAlive, "timeout=12")
+
+		return ctx.SendFile(path.Join(data.DataConfigPath, fold, file), true)
 	}
 	return ctx.SendStatus(fiber.StatusNotFound)
 }
