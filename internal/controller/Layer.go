@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"os"
 	"path"
 	"strconv"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"github.com/yockii/giserver-express/internal/model"
 	"github.com/yockii/giserver-express/internal/service"
 	"github.com/yockii/giserver-express/pkg/server"
+	"github.com/yockii/giserver-express/pkg/util"
 )
 
 var LayerController = new(layerController)
@@ -105,6 +107,18 @@ func (c *layerController) LayerConfig(ctx *fiber.Ctx) error {
 	// 找到config路径，返回
 	if data.DataStoreTypeId == 0 {
 		return ctx.SendFile(path.Join(data.DataConfigPath, data.Name+".scp"))
+	} else {
+		store, err := service.StoreService.GetById(data.DataStoreTypeId)
+		if err != nil {
+			return ctx.SendStatus(fiber.StatusInternalServerError)
+		}
+		if store != nil {
+			reader, err := service.OssService.StreamFromStore(store, data.Name+".scp")
+			if err != nil {
+				return ctx.SendStatus(fiber.StatusInternalServerError)
+			}
+			return ctx.SendStream(reader)
+		}
 	}
 	return ctx.SendStatus(fiber.StatusNotFound)
 }
@@ -134,17 +148,57 @@ func (c *layerController) TileFile(ctx *fiber.Ctx) error {
 
 	fold := ctx.Params("fold")
 	file := ctx.Params("file")
-	if data.DataStoreTypeId == 0 {
-		header := ctx.Response().Header
-		if strings.HasSuffix(file, ".s3mb") {
-			header.SetContentType("application/s3mb")
-		} else if strings.HasSuffix(file, ".s3m") {
-			header.SetContentType("application/s3m")
-		}
-		header.Set(fiber.HeaderConnection, "keep-alive")
-		header.Set(fiber.HeaderKeepAlive, "timeout=12")
 
-		return ctx.SendFile(path.Join(data.DataConfigPath, fold, file), true)
+	ctx.Set(fiber.HeaderConnection, "keep-alive")
+	ctx.Set(fiber.HeaderKeepAlive, "timeout=12")
+
+	if strings.HasSuffix(file, ".s3mb") {
+		ctx.Set(fiber.HeaderContentType, "application/s3mb")
+	} else if strings.HasSuffix(file, ".s3m") {
+		ctx.Set(fiber.HeaderContentType, "application/s3m")
+	}
+
+	if data.DataStoreTypeId == 0 {
+		return c.sendFromLocalFile(ctx, data, fold, file)
+	} else {
+		store, err := service.StoreService.GetById(data.DataStoreTypeId)
+		if err != nil {
+			return ctx.SendStatus(fiber.StatusInternalServerError)
+		}
+		if store != nil {
+			if store.StoreType == 0 {
+				return c.sendFromLocalFile(ctx, data, fold, file)
+			} else if store.StoreType == 1 {
+				objectKey := data.DataConfigPath + "/" + fold + "/" + file
+				fileInfo := util.HashHex(objectKey)
+				if ctx.Get(fiber.HeaderIfNoneMatch) == fileInfo {
+					return ctx.SendStatus(fiber.StatusNotModified)
+				}
+				reader, err := service.OssService.StreamFromStore(store, objectKey)
+				if err != nil {
+					return ctx.SendStatus(fiber.StatusInternalServerError)
+				}
+				ctx.Set(fiber.HeaderETag, fileInfo)
+				return ctx.SendStream(reader)
+			}
+		}
 	}
 	return ctx.SendStatus(fiber.StatusNotFound)
+}
+
+func (c *layerController) sendFromLocalFile(ctx *fiber.Ctx, data *model.Data, fold string, file string) error {
+	f, err := os.Open(path.Join(data.DataConfigPath, fold, file))
+	if err != nil {
+		logger.Errorln(err)
+		return ctx.SendStatus(fiber.StatusInternalServerError)
+	}
+	if fs, _ := f.Stat(); fs != nil {
+		fileInfo := strconv.FormatInt(fs.ModTime().Unix(), 16)
+		if ctx.Get(fiber.HeaderIfNoneMatch) == fileInfo {
+			f.Close()
+			return ctx.SendStatus(fiber.StatusNotModified)
+		}
+		ctx.Set(fiber.HeaderETag, fileInfo)
+	}
+	return ctx.SendStream(f)
 }

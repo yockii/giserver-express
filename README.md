@@ -20,6 +20,7 @@
 三维数据文件夹中的scp文件名称与三维数据的名称保持一致！
 
 ## 调用地址
+适配超图Cesium
 scene.open(
-'http://localhost:8080/services/{自定义空间名称}/rest/realspace'
+'http://localhost:8080/giservices/{自定义空间名称}/rest/realspace'
 )
