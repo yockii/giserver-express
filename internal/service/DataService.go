@@ -78,7 +78,7 @@ func (*dataService) Delete(id int64) (err error) {
 	return
 }
 
-func (*dataService) List(condition *model.Data, offset, limit int) (total int64, list []*model.Data, err error) {
+func (*dataService) List(condition *model.Data, offset, limit int, orderBy string) (total int64, list []*model.Data, err error) {
 	if offset < 0 {
 		offset = 0
 	}
@@ -93,6 +93,9 @@ func (*dataService) List(condition *model.Data, offset, limit int) (total int64,
 	if condition.Name != "" {
 		sess.Where("name like ?", "%"+condition.Name+"%")
 		condition.Name = ""
+	}
+	if orderBy != "" {
+		sess.OrderBy(orderBy)
 	}
 	total, err = sess.FindAndCount(&list, condition)
 	if err != nil {

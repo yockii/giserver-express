@@ -170,7 +170,7 @@ func (*sceneService) Delete(id int64) (err error) {
 	return
 }
 
-func (*sceneService) List(condition *model.Scene, offset, limit int) (total int64, list []*model.Scene, err error) {
+func (*sceneService) List(condition *model.Scene, offset, limit int, orderBy string) (total int64, list []*model.Scene, err error) {
 	if offset < 0 {
 		offset = 0
 	}
@@ -185,6 +185,9 @@ func (*sceneService) List(condition *model.Scene, offset, limit int) (total int6
 	if condition.Name != "" {
 		sess.Where("name like ?", "%"+condition.Name+"%")
 		condition.Name = ""
+	}
+	if orderBy != "" {
+		sess.OrderBy(orderBy)
 	}
 	total, err = sess.FindAndCount(&list, condition)
 	if err != nil {

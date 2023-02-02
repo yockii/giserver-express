@@ -116,7 +116,7 @@ func (*layerService) Delete(id int64) (err error) {
 	return
 }
 
-func (*layerService) List(condition *model.SceneLayer, offset, limit int) (total int64, list []*model.SceneLayer, err error) {
+func (*layerService) List(condition *model.SceneLayer, offset, limit int, orderBy string) (total int64, list []*model.SceneLayer, err error) {
 	if offset < 0 {
 		offset = 0
 	}
@@ -131,6 +131,9 @@ func (*layerService) List(condition *model.SceneLayer, offset, limit int) (total
 	if condition.Name != "" {
 		sess.Where("name like ?", "%"+condition.Name+"%")
 		condition.Name = ""
+	}
+	if orderBy != "" {
+		sess.OrderBy(orderBy)
 	}
 	total, err = sess.FindAndCount(&list, condition)
 	if err != nil {

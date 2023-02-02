@@ -40,6 +40,48 @@ func (*spaceController) Add(ctx *fiber.Ctx) error {
 		})
 	}
 }
+func (*spaceController) Update(ctx *fiber.Ctx) error {
+	data := new(model.Space)
+	if err := ctx.BodyParser(data); err != nil {
+		logger.Errorln(err)
+		return ctx.SendStatus(fiber.StatusInternalServerError)
+	}
+	if data.Id == 0 {
+		return ctx.JSON(&server.CommonResponse{
+			Code: -1,
+			Msg:  "id must be provided",
+		})
+	}
+	err := service.SpaceService.Update(data)
+	if err != nil {
+		return ctx.SendStatus(fiber.StatusInternalServerError)
+	}
+	return ctx.JSON(&server.CommonResponse{})
+}
+func (*spaceController) List(ctx *fiber.Ctx) error {
+	condition := new(model.Space)
+	if err := ctx.QueryParser(condition); err != nil {
+		logger.Errorln(err)
+		return ctx.SendStatus(fiber.StatusInternalServerError)
+	}
+	limit, offset, orderBy, err := server.ParsePaginationInfoFromQuery(ctx)
+	if err != nil {
+		logger.Errorln(err)
+		return ctx.SendStatus(fiber.StatusInternalServerError)
+	}
+	total, list, err := service.SpaceService.List(condition, offset, limit, orderBy)
+	if err != nil {
+		return ctx.SendStatus(fiber.StatusInternalServerError)
+	}
+	return ctx.JSON(&server.CommonResponse{
+		Data: &server.Paginate{
+			Total:  total,
+			Offset: offset,
+			Limit:  limit,
+			Items:  list,
+		},
+	})
+}
 
 func (c *spaceController) SpaceInfo(ctx *fiber.Ctx) error {
 	spaceName := ctx.Params("spaceName")

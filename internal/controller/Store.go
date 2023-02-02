@@ -37,3 +37,45 @@ func (*storeController) Add(ctx *fiber.Ctx) error {
 		})
 	}
 }
+func (*storeController) Update(ctx *fiber.Ctx) error {
+	data := new(model.Store)
+	if err := ctx.BodyParser(data); err != nil {
+		logger.Errorln(err)
+		return ctx.SendStatus(fiber.StatusInternalServerError)
+	}
+	if data.Id == 0 {
+		return ctx.JSON(&server.CommonResponse{
+			Code: -1,
+			Msg:  "id must be provided",
+		})
+	}
+	err := service.StoreService.Update(data)
+	if err != nil {
+		return ctx.SendStatus(fiber.StatusInternalServerError)
+	}
+	return ctx.JSON(&server.CommonResponse{})
+}
+func (*storeController) List(ctx *fiber.Ctx) error {
+	condition := new(model.Store)
+	if err := ctx.QueryParser(condition); err != nil {
+		logger.Errorln(err)
+		return ctx.SendStatus(fiber.StatusInternalServerError)
+	}
+	limit, offset, orderBy, err := server.ParsePaginationInfoFromQuery(ctx)
+	if err != nil {
+		logger.Errorln(err)
+		return ctx.SendStatus(fiber.StatusInternalServerError)
+	}
+	total, list, err := service.StoreService.List(condition, offset, limit, orderBy)
+	if err != nil {
+		return ctx.SendStatus(fiber.StatusInternalServerError)
+	}
+	return ctx.JSON(&server.CommonResponse{
+		Data: &server.Paginate{
+			Total:  total,
+			Offset: offset,
+			Limit:  limit,
+			Items:  list,
+		},
+	})
+}
