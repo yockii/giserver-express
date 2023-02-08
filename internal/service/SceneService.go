@@ -17,7 +17,7 @@ var SceneService = new(sceneService)
 
 type sceneService struct{}
 
-func (s *sceneService) Add(scene *model.Scene) (duplicated bool, err error) {
+func (s *sceneService) Add(scene *domain.Scene) (duplicated bool, err error) {
 	var c int64
 	c, err = database.DB.Count(&model.Scene{
 		SpaceId: scene.SpaceId,
@@ -49,7 +49,7 @@ func (s *sceneService) Add(scene *model.Scene) (duplicated bool, err error) {
 	if scene.MaxCameraDistance == 0 {
 		omitCols = append(omitCols, "max_camera_distance")
 	}
-	if scene.ScaleLegendVisible == 0 {
+	if !scene.ScaleLegendVisible || scene.Scene.ScaleLegendVisible == 0 {
 		omitCols = append(omitCols, "scale_legend_visible")
 	}
 	if scene.CameraFov == 0 {
@@ -73,37 +73,127 @@ func (s *sceneService) Add(scene *model.Scene) (duplicated bool, err error) {
 		logger.Errorln(err)
 		return
 	}
-	_, err = sess.Cols("id", "scene_id").Insert(&model.SceneAtmosphere{
-		Id:      util.SnowflakeId(),
-		SceneId: scene.Id,
-	})
-	if err != nil {
-		logger.Errorln(err)
-		return
+	{
+		cols := []string{"id", "scene_id"}
+		visible := 1
+		if scene.Atmosphere != nil {
+			if !scene.Atmosphere.Visible {
+				visible = -1
+				cols = append(cols, "visible")
+			}
+		}
+		_, err = sess.Cols(cols...).Insert(&model.SceneAtmosphere{
+			Id:      util.SnowflakeId(),
+			SceneId: scene.Id,
+			Visible: visible,
+		})
+		if err != nil {
+			logger.Errorln(err)
+			return
+		}
 	}
-	_, err = sess.Cols("id", "scene_id").Insert(&model.SceneLatLonGrid{
-		Id:      util.SnowflakeId(),
-		SceneId: scene.Id,
-	})
-	if err != nil {
-		logger.Errorln(err)
-		return
+	{
+		cols := []string{"id", "scene_id"}
+		latLonGrid := &model.SceneLatLonGrid{
+			Id:      util.SnowflakeId(),
+			SceneId: scene.Id,
+		}
+		if scene.LatLonGrid != nil {
+			if scene.LatLonGrid.Visible {
+				latLonGrid.Visible = 1
+				cols = append(cols, "visible")
+			}
+			if !scene.LatLonGrid.TextVisible {
+				latLonGrid.TextVisible = -1
+				cols = append(cols, "text_visible")
+			}
+		}
+		_, err = sess.Cols(cols...).Insert(latLonGrid)
+		if err != nil {
+			logger.Errorln(err)
+			return
+		}
 	}
-	_, err = sess.Cols("id", "scene_id").Insert(&model.SceneCamera{
-		Id:      util.SnowflakeId(),
-		SceneId: scene.Id,
-	})
-	if err != nil {
-		logger.Errorln(err)
-		return
+	{
+		cols := []string{"id", "scene_id"}
+		camera := &model.SceneCamera{
+			Id:      util.SnowflakeId(),
+			SceneId: scene.Id,
+		}
+		if scene.Camera != nil {
+			if scene.Camera.Altitude != 0 {
+				camera.Altitude = scene.Camera.Altitude
+				cols = append(cols, "altitude")
+			}
+			if scene.Camera.Latitude != 0 {
+				camera.Latitude = scene.Camera.Latitude
+				cols = append(cols, "latitude")
+			}
+			if scene.Camera.Longitude != 0 {
+				camera.Longitude = scene.Camera.Longitude
+				cols = append(cols, "longitude")
+			}
+			if scene.Camera.Heading != 0 {
+				camera.Heading = scene.Camera.Heading
+				cols = append(cols, "heading")
+			}
+			if scene.Camera.AltitudeMode != "" {
+				camera.AltitudeMode = scene.Camera.AltitudeMode
+				cols = append(cols, "altitudeMode")
+			}
+			if scene.Camera.Tilt != 0 {
+				camera.Tilt = scene.Camera.Tilt
+				cols = append(cols, "tilt")
+			}
+		}
+		_, err = sess.Cols(cols...).Insert(camera)
+		if err != nil {
+			logger.Errorln(err)
+			return
+		}
 	}
-	_, err = sess.Cols("id", "scene_id").Insert(&model.SceneFog{
-		Id:      util.SnowflakeId(),
-		SceneId: scene.Id,
-	})
-	if err != nil {
-		logger.Errorln(err)
-		return
+	{
+		cols := []string{"id", "scene_id"}
+		fog := &model.SceneFog{
+			Id:      util.SnowflakeId(),
+			SceneId: scene.Id,
+		}
+		if scene.Fog != nil {
+			if scene.Fog.Mode != "" {
+				fog.Mode = scene.Fog.Mode
+				cols = append(cols, "mode")
+			}
+			if scene.Fog.EndDistance != 1 {
+				fog.EndDistance = scene.Fog.EndDistance
+				cols = append(cols, "end_distance")
+			}
+			if scene.Fog.StartDistance != 0 {
+				fog.StartDistance = scene.Fog.StartDistance
+				cols = append(cols, "start_distance")
+			}
+			if scene.Fog.Density != 1 {
+				fog.Density = scene.Fog.Density
+				cols = append(cols, "density")
+			}
+			if scene.Fog.Enable {
+				fog.Enable = 1
+				cols = append(cols, "enable")
+			}
+			if scene.Fog.Color != nil {
+				fog.Color = strings.Join([]string{
+					strconv.Itoa(scene.Fog.Color.Red),
+					strconv.Itoa(scene.Fog.Color.Green),
+					strconv.Itoa(scene.Fog.Color.Blue),
+					strconv.Itoa(scene.Fog.Color.Alpha),
+				}, ",")
+				cols = append(cols, "color")
+			}
+		}
+		_, err = sess.Cols(cols...).Insert(fog)
+		if err != nil {
+			logger.Errorln(err)
+			return
+		}
 	}
 	err = sess.Commit()
 	if err != nil {
@@ -113,16 +203,125 @@ func (s *sceneService) Add(scene *model.Scene) (duplicated bool, err error) {
 	return
 }
 
-func (*sceneService) Update(scene *model.Scene) error {
+func (*sceneService) Update(scene *domain.Scene) error {
 	if scene.Id == 0 {
 		return errors.New("ID must be provided")
 	}
 
-	_, err := database.DB.ID(scene.Id).Update(scene)
-	if err != nil {
-		logger.Errorln(err)
+	sess := database.DB.NewSession()
+	sess.Begin()
+	defer sess.Close()
+
+	var omitCols []string
+	{
+		if scene.ResourceConfigId == "" {
+			omitCols = append(omitCols, "resource_config_id")
+		}
+		if scene.SupportedMediaTypes == "" {
+			omitCols = append(omitCols, "supported_media_types")
+		}
+		if scene.ResourceType == "" {
+			omitCols = append(omitCols, "resource_type")
+		}
+		if scene.MinCameraDistance == 0 {
+			omitCols = append(omitCols, "min_camera_distance")
+		}
+		if scene.MaxCameraDistance == 0 {
+			omitCols = append(omitCols, "max_camera_distance")
+		}
+		if !scene.ScaleLegendVisible || scene.Scene.ScaleLegendVisible == 0 {
+			omitCols = append(omitCols, "scale_legend_visible")
+		}
+		if scene.CameraFov == 0 {
+			omitCols = append(omitCols, "camera_fov")
+		}
+		if scene.FogVisibleAltitude == 0 {
+			omitCols = append(omitCols, "fog_visible_altitude")
+		}
+		if scene.SceneType == "" {
+			omitCols = append(omitCols, "scene_type")
+		}
+		if scene.TerrainExaggeration == 0 {
+			omitCols = append(omitCols, "terrain_exaggeration")
+		}
 	}
-	return err
+
+	if _, err := sess.Omit(omitCols...).ID(scene.Id).Update(scene); err != nil {
+		logger.Errorln(err)
+		return err
+	}
+
+	if scene.Atmosphere != nil {
+		atmosphere := &model.SceneAtmosphere{
+			Visible: 1,
+		}
+		if !scene.Atmosphere.Visible {
+			atmosphere.Visible = -1
+		}
+		if _, err := sess.Update(atmosphere, &model.SceneAtmosphere{SceneId: scene.Id}); err != nil {
+			logger.Errorln(err)
+			return err
+		}
+	}
+	if scene.LatLonGrid != nil {
+		latLonGrid := &model.SceneLatLonGrid{
+			Visible:     -1,
+			TextVisible: 1,
+		}
+		if scene.LatLonGrid.Visible {
+			latLonGrid.Visible = 1
+		}
+		if !scene.LatLonGrid.TextVisible {
+			latLonGrid.TextVisible = -1
+		}
+		if _, err := sess.Update(latLonGrid, &model.SceneLatLonGrid{SceneId: scene.Id}); err != nil {
+			logger.Errorln(err)
+			return err
+		}
+	}
+	if scene.Camera != nil {
+		camera := &model.SceneCamera{
+			Altitude:     scene.Camera.Altitude,
+			Latitude:     scene.Camera.Latitude,
+			Longitude:    scene.Camera.Longitude,
+			Heading:      scene.Camera.Heading,
+			AltitudeMode: scene.Camera.AltitudeMode,
+			Tilt:         scene.Camera.Tilt,
+		}
+		if _, err := sess.Update(camera, &model.SceneCamera{SceneId: scene.Id}); err != nil {
+			logger.Errorln(err)
+			return err
+		}
+	}
+	if scene.Fog != nil {
+		enable := -1
+		if !scene.Fog.Enable {
+			enable = 1
+		}
+		fog := &model.SceneFog{
+			Mode:          scene.Fog.Mode,
+			EndDistance:   scene.Fog.EndDistance,
+			StartDistance: scene.Fog.StartDistance,
+			Density:       scene.Fog.Density,
+			Enable:        enable,
+			Color: strings.Join([]string{
+				strconv.Itoa(scene.Fog.Color.Red),
+				strconv.Itoa(scene.Fog.Color.Green),
+				strconv.Itoa(scene.Fog.Color.Blue),
+				strconv.Itoa(scene.Fog.Color.Alpha),
+			}, ","),
+		}
+		if _, err := sess.Update(fog, &model.SceneFog{SceneId: scene.Id}); err != nil {
+			logger.Errorln(err)
+			return err
+		}
+	}
+
+	if err := sess.Commit(); err != nil {
+		logger.Errorln(err)
+		return err
+	}
+	return nil
 }
 
 func (*sceneService) Delete(id int64) (err error) {
@@ -229,15 +428,9 @@ func (s *sceneService) GetRichSceneInfoById(sceneId int64) (*domain.Scene, error
 		return nil, nil
 	}
 	result := &domain.Scene{
-		Name:                scene.Name,
-		MinCameraDistance:   scene.MinCameraDistance,
-		MaxCameraDistance:   scene.MaxCameraDistance,
-		ScaleLegendVisible:  scene.ScaleLegendVisible == 1,
-		CameraFOV:           scene.CameraFov,
-		FogVisibleAltitude:  scene.FogVisibleAltitude,
-		SceneType:           scene.SceneType,
-		TerrainExaggeration: scene.TerrainExaggeration,
-		Layers:              nil,
+		Scene:              *scene,
+		ScaleLegendVisible: scene.ScaleLegendVisible == 1,
+		Layers:             nil,
 	}
 	// 大气
 	{

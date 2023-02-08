@@ -17,7 +17,7 @@ var SceneController = new(sceneController)
 type sceneController struct{}
 
 func (*sceneController) Add(ctx *fiber.Ctx) error {
-	scene := new(model.Scene)
+	scene := new(domain.Scene)
 	if err := ctx.BodyParser(scene); err != nil {
 		logger.Errorln(err)
 		return ctx.SendStatus(fiber.StatusInternalServerError)
@@ -42,7 +42,7 @@ func (*sceneController) Add(ctx *fiber.Ctx) error {
 	}
 }
 func (*sceneController) Update(ctx *fiber.Ctx) error {
-	data := new(model.Scene)
+	data := new(domain.Scene)
 	if err := ctx.BodyParser(data); err != nil {
 		logger.Errorln(err)
 		return ctx.SendStatus(fiber.StatusInternalServerError)

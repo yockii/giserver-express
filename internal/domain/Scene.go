@@ -1,5 +1,7 @@
 package domain
 
+import "github.com/yockii/giserver-express/internal/model"
+
 type SpaceScene struct {
 	ResourceConfigId    string   `json:"resourceConfigID,omitempty"`
 	SupportedMediaTypes []string `json:"supportedMediaTypes,omitempty"`
@@ -9,7 +11,7 @@ type SpaceScene struct {
 }
 
 type Scene struct {
-	Name                string           `json:"name"`
+	model.Scene
 	MinCameraDistance   float64          `json:"minCameraDistance" `
 	MaxCameraDistance   float64          `json:"maxCameraDistance" `
 	ScaleLegendVisible  bool             `json:"scaleLegendVisible"`
@@ -75,8 +77,8 @@ type SceneCamera struct {
 
 type SceneFog struct {
 	Mode          string  `json:"mode"`
-	EndDistance   float64 `json:"end_distance" `
-	StartDistance float64 `json:"start_distance"`
+	EndDistance   float64 `json:"endDistance" `
+	StartDistance float64 `json:"startDistance"`
 	Color         *Color  `json:"color"`
 	Density       float64 `json:"density"`
 	Enable        bool    `json:"enable"`
