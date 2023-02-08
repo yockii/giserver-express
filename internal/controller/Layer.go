@@ -155,7 +155,7 @@ func (c *layerController) LayerConfig(ctx *fiber.Ctx) error {
 			return ctx.SendStatus(fiber.StatusInternalServerError)
 		}
 		if store != nil {
-			reader, err := service.OssService.StreamFromStore(store, data.Name+".scp")
+			reader, err := service.OssService.StreamFromStore(store, store.Path+data.DataConfigPath+"/"+data.Name+".scp")
 			if err != nil {
 				return ctx.SendStatus(fiber.StatusInternalServerError)
 			}
@@ -211,7 +211,7 @@ func (c *layerController) TileFile(ctx *fiber.Ctx) error {
 			if store.StoreType == 0 {
 				return c.sendFromLocalFile(ctx, data, fold, file)
 			} else if store.StoreType == 1 {
-				objectKey := data.DataConfigPath + "/" + fold + "/" + file
+				objectKey := store.Path + data.DataConfigPath + "/" + fold + "/" + file
 				fileInfo := util.HashHex(objectKey)
 				if ctx.Get(fiber.HeaderIfNoneMatch) == fileInfo {
 					return ctx.SendStatus(fiber.StatusNotModified)
