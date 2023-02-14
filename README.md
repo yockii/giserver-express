@@ -19,6 +19,13 @@
 
 三维数据文件夹中的scp文件名称与三维数据的名称保持一致！
 
+注意，如果使用代理，并且使用了子路径，务必将 /giservices 进行特别处理，因为超图的返回要求是服务端拼接完整的请求路径，程序会将/giservices作为根路径，即 http(s)://yourdomain/giservices/..... 
+
+代理中务必设置 Host的header，否则程序无法获取到真实的请求地址host，如nginx中：
+```
+proxy_set_header Host $host_name;
+```
+
 ## 调用地址
 适配超图Cesium
 scene.open(

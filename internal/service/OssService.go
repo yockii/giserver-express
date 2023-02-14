@@ -18,7 +18,7 @@ type ossService struct {
 func (s *ossService) StreamFromStore(store *model.Store, objectKey string) (reader io.Reader, err error) {
 	client, ok := s.ossClients[store.Id]
 	if !ok {
-		client, err = aliyun.NewOssClient(store.Endpoint, store.AccessKeyId, store.AccessKeySecret, store.BucketName, store.UseCname == 1)
+		client, err = aliyun.NewOssClient(store.Endpoint, store.BucketName, store.AccessKeyId, store.AccessKeySecret, store.UseCname == 1)
 		if err != nil {
 			logger.Errorln(err)
 			return nil, err

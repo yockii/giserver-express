@@ -17,11 +17,11 @@ var SceneService = new(sceneService)
 
 type sceneService struct{}
 
-func (s *sceneService) Add(scene *domain.Scene) (duplicated bool, err error) {
+func (s *sceneService) Add(sceneDomain *domain.Scene) (duplicated bool, err error) {
 	var c int64
 	c, err = database.DB.Count(&model.Scene{
-		SpaceId: scene.SpaceId,
-		Name:    scene.Name,
+		SpaceId: sceneDomain.SpaceId,
+		Name:    sceneDomain.Name,
 	})
 	if err != nil {
 		logger.Errorln(err)
@@ -31,6 +31,8 @@ func (s *sceneService) Add(scene *domain.Scene) (duplicated bool, err error) {
 		duplicated = true
 		return
 	}
+
+	scene := sceneDomain.Scene
 	scene.Id = util.SnowflakeId()
 
 	var omitCols []string
@@ -49,7 +51,7 @@ func (s *sceneService) Add(scene *domain.Scene) (duplicated bool, err error) {
 	if scene.MaxCameraDistance == 0 {
 		omitCols = append(omitCols, "max_camera_distance")
 	}
-	if !scene.ScaleLegendVisible || scene.Scene.ScaleLegendVisible == 0 {
+	if !sceneDomain.ScaleLegendVisible || scene.ScaleLegendVisible == 0 {
 		omitCols = append(omitCols, "scale_legend_visible")
 	}
 	if scene.CameraFov == 0 {
@@ -76,8 +78,8 @@ func (s *sceneService) Add(scene *domain.Scene) (duplicated bool, err error) {
 	{
 		cols := []string{"id", "scene_id"}
 		visible := 1
-		if scene.Atmosphere != nil {
-			if !scene.Atmosphere.Visible {
+		if sceneDomain.Atmosphere != nil {
+			if !sceneDomain.Atmosphere.Visible {
 				visible = -1
 				cols = append(cols, "visible")
 			}
@@ -98,12 +100,12 @@ func (s *sceneService) Add(scene *domain.Scene) (duplicated bool, err error) {
 			Id:      util.SnowflakeId(),
 			SceneId: scene.Id,
 		}
-		if scene.LatLonGrid != nil {
-			if scene.LatLonGrid.Visible {
+		if sceneDomain.LatLonGrid != nil {
+			if sceneDomain.LatLonGrid.Visible {
 				latLonGrid.Visible = 1
 				cols = append(cols, "visible")
 			}
-			if !scene.LatLonGrid.TextVisible {
+			if !sceneDomain.LatLonGrid.TextVisible {
 				latLonGrid.TextVisible = -1
 				cols = append(cols, "text_visible")
 			}
@@ -120,29 +122,29 @@ func (s *sceneService) Add(scene *domain.Scene) (duplicated bool, err error) {
 			Id:      util.SnowflakeId(),
 			SceneId: scene.Id,
 		}
-		if scene.Camera != nil {
-			if scene.Camera.Altitude != 0 {
-				camera.Altitude = scene.Camera.Altitude
+		if sceneDomain.Camera != nil {
+			if sceneDomain.Camera.Altitude != 0 {
+				camera.Altitude = sceneDomain.Camera.Altitude
 				cols = append(cols, "altitude")
 			}
-			if scene.Camera.Latitude != 0 {
-				camera.Latitude = scene.Camera.Latitude
+			if sceneDomain.Camera.Latitude != 0 {
+				camera.Latitude = sceneDomain.Camera.Latitude
 				cols = append(cols, "latitude")
 			}
-			if scene.Camera.Longitude != 0 {
-				camera.Longitude = scene.Camera.Longitude
+			if sceneDomain.Camera.Longitude != 0 {
+				camera.Longitude = sceneDomain.Camera.Longitude
 				cols = append(cols, "longitude")
 			}
-			if scene.Camera.Heading != 0 {
-				camera.Heading = scene.Camera.Heading
+			if sceneDomain.Camera.Heading != 0 {
+				camera.Heading = sceneDomain.Camera.Heading
 				cols = append(cols, "heading")
 			}
-			if scene.Camera.AltitudeMode != "" {
-				camera.AltitudeMode = scene.Camera.AltitudeMode
+			if sceneDomain.Camera.AltitudeMode != "" {
+				camera.AltitudeMode = sceneDomain.Camera.AltitudeMode
 				cols = append(cols, "altitudeMode")
 			}
-			if scene.Camera.Tilt != 0 {
-				camera.Tilt = scene.Camera.Tilt
+			if sceneDomain.Camera.Tilt != 0 {
+				camera.Tilt = sceneDomain.Camera.Tilt
 				cols = append(cols, "tilt")
 			}
 		}
@@ -158,33 +160,33 @@ func (s *sceneService) Add(scene *domain.Scene) (duplicated bool, err error) {
 			Id:      util.SnowflakeId(),
 			SceneId: scene.Id,
 		}
-		if scene.Fog != nil {
-			if scene.Fog.Mode != "" {
-				fog.Mode = scene.Fog.Mode
+		if sceneDomain.Fog != nil {
+			if sceneDomain.Fog.Mode != "" {
+				fog.Mode = sceneDomain.Fog.Mode
 				cols = append(cols, "mode")
 			}
-			if scene.Fog.EndDistance != 1 {
-				fog.EndDistance = scene.Fog.EndDistance
+			if sceneDomain.Fog.EndDistance != 1 {
+				fog.EndDistance = sceneDomain.Fog.EndDistance
 				cols = append(cols, "end_distance")
 			}
-			if scene.Fog.StartDistance != 0 {
-				fog.StartDistance = scene.Fog.StartDistance
+			if sceneDomain.Fog.StartDistance != 0 {
+				fog.StartDistance = sceneDomain.Fog.StartDistance
 				cols = append(cols, "start_distance")
 			}
-			if scene.Fog.Density != 1 {
-				fog.Density = scene.Fog.Density
+			if sceneDomain.Fog.Density != 1 {
+				fog.Density = sceneDomain.Fog.Density
 				cols = append(cols, "density")
 			}
-			if scene.Fog.Enable {
+			if sceneDomain.Fog.Enable {
 				fog.Enable = 1
 				cols = append(cols, "enable")
 			}
-			if scene.Fog.Color != nil {
+			if sceneDomain.Fog.Color != nil {
 				fog.Color = strings.Join([]string{
-					strconv.Itoa(scene.Fog.Color.Red),
-					strconv.Itoa(scene.Fog.Color.Green),
-					strconv.Itoa(scene.Fog.Color.Blue),
-					strconv.Itoa(scene.Fog.Color.Alpha),
+					strconv.Itoa(sceneDomain.Fog.Color.Red),
+					strconv.Itoa(sceneDomain.Fog.Color.Green),
+					strconv.Itoa(sceneDomain.Fog.Color.Blue),
+					strconv.Itoa(sceneDomain.Fog.Color.Alpha),
 				}, ",")
 				cols = append(cols, "color")
 			}

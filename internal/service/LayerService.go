@@ -36,10 +36,13 @@ func (*layerService) Add(layer *model.SceneLayer) (duplicated bool, err error) {
 		return
 	}
 	if !exists {
+		logger.Debugln("data not exists...")
 		return
 	}
-	layer.Name = data.Name
 
+	logger.Infoln("ready to add layer...")
+
+	layer.Name = data.Name
 	layer.Id = util.SnowflakeId()
 
 	var omitCols []string

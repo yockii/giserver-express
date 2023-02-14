@@ -36,10 +36,10 @@ func InitRouter() {
 		layer.Get("/list", LayerController.List)
 	}
 
-	space := server.Group("/space")
+	space := server.Group("/giservices/space")
 	space.Get("/:spaceName", SpaceController.SpaceInfo)
 
-	scene := server.Group("/scene")
+	scene := server.Group("/giservices/scene")
 	scene.Get("/:sceneId.json", SceneController.SceneInfo)
 	scene.Get("/:sceneId/layers.json", SceneController.SceneLayers)
 	scene.Get("/:sceneId", SceneController.SceneInfo).Name("scene.info")
