@@ -31,3 +31,8 @@ proxy_set_header Host $host_name;
 scene.open(
 'http://localhost:8080/giservices/{自定义空间名称}/rest/realspace'
 )
+
+其他数据文件的请求地址：
+http://localhost:8080/giservices/{自定义空间名称}/data/{文件}
+如
+http://localhost:8080/giservices/testSpace/data/roads.kml
