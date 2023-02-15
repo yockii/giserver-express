@@ -127,23 +127,26 @@ func (c *layerController) LayerConfig(ctx *fiber.Ctx) error {
 	spaceName := ctx.Params("spaceName")
 	dataName := ctx.Params("dataName")
 	var data *model.Data
-	data = service.DataService.GetFromCache(spaceName, dataName)
+	data = service.DataService.GetFromCache(spaceName, "OSGB", dataName)
 	if data == nil {
-		space, err := service.SpaceService.FindByName(spaceName)
-		if err != nil {
-			return ctx.SendStatus(fiber.StatusInternalServerError)
-		}
-		if space == nil {
-			return ctx.SendStatus(fiber.StatusNotFound)
-		}
-		data, err = service.DataService.GetBySpaceIdAndDataName(space.Id, dataName)
-		if err != nil {
-			return ctx.SendStatus(fiber.StatusInternalServerError)
-		}
+		data = service.DataService.GetFromCache(spaceName, "S3M", dataName)
 		if data == nil {
-			return ctx.SendStatus(fiber.StatusNotFound)
+			space, err := service.SpaceService.FindByName(spaceName)
+			if err != nil {
+				return ctx.SendStatus(fiber.StatusInternalServerError)
+			}
+			if space == nil {
+				return ctx.SendStatus(fiber.StatusNotFound)
+			}
+			data, err = service.DataService.GetBySpaceIdAndDataName(space.Id, "", dataName)
+			if err != nil {
+				return ctx.SendStatus(fiber.StatusInternalServerError)
+			}
+			if data == nil {
+				return ctx.SendStatus(fiber.StatusNotFound)
+			}
+			service.DataService.Cache(spaceName, data.DataType, data)
 		}
-		service.DataService.Cache(spaceName, data)
 	}
 
 	// 找到config路径，返回
@@ -169,23 +172,26 @@ func (c *layerController) TileFile(ctx *fiber.Ctx) error {
 	spaceName := ctx.Params("spaceName")
 	dataName := ctx.Params("dataName")
 	var data *model.Data
-	data = service.DataService.GetFromCache(spaceName, dataName)
+	data = service.DataService.GetFromCache(spaceName, "OSGB", dataName)
 	if data == nil {
-		space, err := service.SpaceService.FindByName(spaceName)
-		if err != nil {
-			return ctx.SendStatus(fiber.StatusInternalServerError)
-		}
-		if space == nil {
-			return ctx.SendStatus(fiber.StatusNotFound)
-		}
-		data, err = service.DataService.GetBySpaceIdAndDataName(space.Id, dataName)
-		if err != nil {
-			return ctx.SendStatus(fiber.StatusInternalServerError)
-		}
+		data = service.DataService.GetFromCache(spaceName, "S3M", dataName)
 		if data == nil {
-			return ctx.SendStatus(fiber.StatusNotFound)
+			space, err := service.SpaceService.FindByName(spaceName)
+			if err != nil {
+				return ctx.SendStatus(fiber.StatusInternalServerError)
+			}
+			if space == nil {
+				return ctx.SendStatus(fiber.StatusNotFound)
+			}
+			data, err = service.DataService.GetBySpaceIdAndDataName(space.Id, "", dataName)
+			if err != nil {
+				return ctx.SendStatus(fiber.StatusInternalServerError)
+			}
+			if data == nil {
+				return ctx.SendStatus(fiber.StatusNotFound)
+			}
+			service.DataService.Cache(spaceName, data.DataType, data)
 		}
-		service.DataService.Cache(spaceName, data)
 	}
 
 	fold := ctx.Params("fold")

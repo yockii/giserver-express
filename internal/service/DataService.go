@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"strings"
 
 	logger "github.com/sirupsen/logrus"
 
@@ -11,11 +12,11 @@ import (
 )
 
 var DataService = &dataService{
-	cache: make(map[string]map[string]*model.Data),
+	scpCache: make(map[string]map[string]map[string]*model.Data),
 }
 
 type dataService struct {
-	cache map[string]map[string]*model.Data
+	scpCache map[string]map[string]map[string]*model.Data
 }
 
 func (*dataService) Add(data *model.Data) (duplicated bool, err error) {
@@ -126,12 +127,18 @@ func (*dataService) FindSpaceDataList(spaceId int64) (datas []*model.Data, err e
 	return
 }
 
-func (s *dataService) GetBySpaceIdAndDataName(spaceId int64, name string) (*model.Data, error) {
+func (s *dataService) GetBySpaceIdAndDataName(spaceId int64, dataType string, name string) (*model.Data, error) {
 	data := &model.Data{
 		SpaceId: spaceId,
 		Name:    name,
 	}
-	exists, err := database.DB.Get(data)
+	session := database.DB.NewSession()
+	if dataType != "" {
+		data.DataType = strings.ToUpper(dataType)
+	} else {
+		session.Where("data_type=? or data_type=?", "OSGB", "S3M")
+	}
+	exists, err := session.Get(data)
 	if err != nil {
 		logger.Errorln(err)
 		return nil, err
@@ -156,23 +163,33 @@ func (s *dataService) GetById(id int64) (*model.Data, error) {
 	return nil, nil
 }
 
-func (s *dataService) GetFromCache(spaceName string, dataName string) *model.Data {
-	spaceDataMap, ok := s.cache[spaceName]
-	if !ok {
+func (s *dataService) GetFromCache(spaceName string, dataType string, dataName string) *model.Data {
+	dataType = strings.ToUpper(dataType)
+	spaceDataMap, hasSpace := s.scpCache[spaceName]
+	if !hasSpace {
 		return nil
 	}
-	data, has := spaceDataMap[dataName]
-	if !has {
+	dt, hasDataType := spaceDataMap[dataName]
+	if !hasDataType {
+		return nil
+	}
+	data, hasData := dt[dataType]
+	if !hasData {
 		return nil
 	}
 	return data
 }
 
-func (s *dataService) Cache(spaceName string, data *model.Data) {
-	spaceDataMap, ok := s.cache[spaceName]
-	if !ok || spaceDataMap == nil {
-		spaceDataMap = make(map[string]*model.Data)
-		s.cache[spaceName] = spaceDataMap
+func (s *dataService) Cache(spaceName string, dataType string, data *model.Data) {
+	spaceDataMap, hasSpace := s.scpCache[spaceName]
+	if !hasSpace || spaceDataMap == nil {
+		spaceDataMap = make(map[string]map[string]*model.Data)
+		s.scpCache[spaceName] = spaceDataMap
 	}
-	spaceDataMap[data.Name] = data
+	dtMap, hasDt := spaceDataMap[dataType]
+	if !hasDt || dtMap == nil {
+		dtMap = make(map[string]*model.Data)
+		spaceDataMap[dataType] = dtMap
+	}
+	dtMap[data.Name] = data
 }
