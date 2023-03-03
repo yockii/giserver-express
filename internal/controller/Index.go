@@ -48,7 +48,7 @@ func InitRouter() {
 	// iserver适配
 	{
 		server.Get("/giservices/:spaceName/rest/realspace/scenes.json", SpaceController.SpaceInfo)
-		server.Get("/giservices/:spaceName/rest/realspace/datas/:dataName/config", LayerController.LayerConfig)
+		server.Get("/giservices/:spaceName/rest/realspace/datas/:layerName/config", LayerController.LayerConfig)
 		server.Get("/giservices/:spaceName/rest/realspace/datas/:dataName/data/path/:fold/:file", LayerController.TileFile)
 
 		server.Get("/giservices/:spaceName/rest/realspace/login.json", func(ctx *fiber.Ctx) error {
@@ -70,5 +70,29 @@ func InitRouter() {
 
 		// KML等文件
 		server.Get("/giservices/:spaceName/data/:dataName", DataController.DataFile)
+	}
+
+	// 3dtiles适配
+	{
+		// 单场景多个图层处理，tileset.json
+		//	{
+		//		"asset": {
+		//		"version": "1.0"
+		//	},
+		//		"geometricError": 1000.0,
+		//		"root": {
+		//		"children": [
+		//	{
+		//	"url": "tileset1.json"
+		//	},
+		//	{
+		//	"url": "tileset2.json"
+		//	},
+		//	{
+		//	"url": "tileset3.json"
+		//	}
+		//]
+		//}
+		//}
 	}
 }

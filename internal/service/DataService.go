@@ -22,9 +22,8 @@ type dataService struct {
 func (*dataService) Add(data *model.Data) (duplicated bool, err error) {
 	var c int64
 	c, err = database.DB.Count(&model.Data{
-		SpaceId:        data.SpaceId,
-		Name:           data.Name,
-		DataConfigPath: data.DataConfigPath,
+		SpaceId: data.SpaceId,
+		Name:    data.Name,
 	})
 	if err != nil {
 		logger.Errorln(err)

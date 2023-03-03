@@ -115,7 +115,7 @@ func (c *layerController) GetLayerExtendXml(ctx *fiber.Ctx) error {
 	}
 
 	ctx.Response().Header.SetContentType(fiber.MIMEApplicationXML)
-	return ctx.SendString(c.generateExtendXml(data.Name, data.DataConfigPath, layer.CreateTime.String(), layer.Name, data.DataType, "NONE"))
+	return ctx.SendString(c.generateExtendXml(data.DataName, data.DataConfigPath, layer.CreateTime.String(), layer.Name, data.DataType, "NONE"))
 }
 
 // generateExtendXml cacheFileType:OSGB/S3M   renderCullMode: NONE/DEFAULT
@@ -125,40 +125,32 @@ func (*layerController) generateExtendXml(caption, dsAlias, createTime, layerNam
 
 func (c *layerController) LayerConfig(ctx *fiber.Ctx) error {
 	spaceName := ctx.Params("spaceName")
-	dataName := ctx.Params("dataName")
+	layerName := ctx.Params("layerName")
+	space, err := service.SpaceService.FindByName(spaceName)
+	if err != nil {
+		return ctx.SendStatus(fiber.StatusInternalServerError)
+	}
+	var layer *model.SceneLayer
+	layer, err = service.LayerService.GetBySpaceIdAndLayerName(space.Id, layerName)
+	if err != nil {
+		return ctx.SendStatus(fiber.StatusInternalServerError)
+	}
 	var data *model.Data
-	data = service.DataService.GetFromCache(spaceName, "OSGB", dataName)
-	if data == nil {
-		data = service.DataService.GetFromCache(spaceName, "S3M", dataName)
-		if data == nil {
-			space, err := service.SpaceService.FindByName(spaceName)
-			if err != nil {
-				return ctx.SendStatus(fiber.StatusInternalServerError)
-			}
-			if space == nil {
-				return ctx.SendStatus(fiber.StatusNotFound)
-			}
-			data, err = service.DataService.GetBySpaceIdAndDataName(space.Id, "", dataName)
-			if err != nil {
-				return ctx.SendStatus(fiber.StatusInternalServerError)
-			}
-			if data == nil {
-				return ctx.SendStatus(fiber.StatusNotFound)
-			}
-			service.DataService.Cache(spaceName, data.DataType, data)
-		}
+	data, err = service.DataService.GetById(layer.DataId)
+	if err != nil {
+		return ctx.SendStatus(fiber.StatusInternalServerError)
 	}
 
 	// 找到config路径，返回
 	if data.DataStoreTypeId == 0 {
-		return ctx.SendFile(path.Join(data.DataConfigPath, data.Name+".scp"))
+		return ctx.SendFile(path.Join(data.DataConfigPath, data.DataName))
 	} else {
 		store, err := service.StoreService.GetById(data.DataStoreTypeId)
 		if err != nil {
 			return ctx.SendStatus(fiber.StatusInternalServerError)
 		}
 		if store != nil {
-			reader, err := service.OssService.StreamFromStore(store, store.Path+data.DataConfigPath+"/"+data.Name+".scp")
+			reader, err := service.OssService.StreamFromStore(store, store.Path+data.DataConfigPath+"/"+data.DataName)
 			if err != nil {
 				return ctx.SendStatus(fiber.StatusInternalServerError)
 			}

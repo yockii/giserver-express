@@ -64,6 +64,7 @@ func (s *storeService) Update(store *model.Store) error {
 		return err
 	}
 	s.cache(store)
+	delete(OssService.ossClients, store.Id)
 	return nil
 }
 

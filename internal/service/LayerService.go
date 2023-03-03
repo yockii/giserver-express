@@ -42,7 +42,7 @@ func (*layerService) Add(layer *model.SceneLayer) (duplicated bool, err error) {
 
 	logger.Infoln("ready to add layer...")
 
-	layer.Name = data.Name
+	layer.Name = data.DataName
 	layer.Id = util.SnowflakeId()
 
 	var omitCols []string
@@ -192,7 +192,7 @@ func (*layerService) FindSceneDomainLayers(sceneId int64) (list []*domain.SceneL
 				Editable:           l.Editable == 1,
 				Caption:            l.Caption,
 				Description:        l.Description,
-				DataName:           data.Name,
+				DataName:           data.DataName,
 				HasLocalCache:      l.HasLocalCache == 1,
 				Layer3DType:        l.Layer3DType,
 				DataConfigPath:     data.DataConfigPath,
@@ -216,6 +216,22 @@ func (s *layerService) GetBySceneIdAndLayerName(sceneId int64, name string) (*mo
 	layer := &model.SceneLayer{
 		SceneId: sceneId,
 		Name:    name,
+	}
+	exists, err := database.DB.Get(layer)
+	if err != nil {
+		logger.Errorln(err)
+		return nil, err
+	}
+	if exists {
+		return layer, nil
+	}
+	return nil, nil
+}
+
+func (s *layerService) GetBySpaceIdAndLayerName(spaceId int64, layerName string) (*model.SceneLayer, error) {
+	layer := &model.SceneLayer{
+		SpaceId: spaceId,
+		Name:    layerName,
 	}
 	exists, err := database.DB.Get(layer)
 	if err != nil {
