@@ -106,7 +106,7 @@ func (c *spaceController) SpaceInfo(ctx *fiber.Ctx) error {
 	protocol := ctx.Protocol()
 	for _, scene := range scenes {
 		s := scene
-		sceneLocation, _ := ctx.GetRouteURL("scene.info", fiber.Map{"sceneId": s.Id})
+		sceneLocation, _ := ctx.GetRouteURL("scene.info", fiber.Map{"sceneId": int64(s.Id)})
 		sDomain := &domain.SpaceScene{
 			ResourceConfigId:    s.ResourceConfigId,
 			SupportedMediaTypes: strings.Split(s.SupportedMediaTypes, ","),
