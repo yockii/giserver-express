@@ -13,6 +13,7 @@ import (
 	"github.com/yockii/giserver-express/internal/constant"
 	"github.com/yockii/giserver-express/internal/model"
 	"github.com/yockii/giserver-express/internal/service"
+	"github.com/yockii/giserver-express/pkg/database"
 	"github.com/yockii/giserver-express/pkg/server"
 	"github.com/yockii/giserver-express/pkg/util"
 )
@@ -38,7 +39,10 @@ func (*layerController) Add(ctx *fiber.Ctx) error {
 		return ctx.SendStatus(fiber.StatusInternalServerError)
 	}
 	if d {
-		return ctx.JSON(&server.CommonResponse{})
+		return ctx.JSON(&server.CommonResponse{
+			Code: -1,
+			Msg:  "sceneId & dataId duplicated",
+		})
 	} else {
 		return ctx.JSON(&server.CommonResponse{
 			Data: layer.Id,
@@ -90,11 +94,12 @@ func (*layerController) List(ctx *fiber.Ctx) error {
 
 func (c *layerController) GetLayerExtendXml(ctx *fiber.Ctx) error {
 	sceneIdStr := ctx.Params("sceneId")
-	sceneId, err := strconv.ParseInt(sceneIdStr, 10, 64)
+	sceneIdInt64, err := strconv.ParseInt(sceneIdStr, 10, 64)
 	if err != nil {
 		logger.Errorln(err)
 		return ctx.SendStatus(fiber.StatusInternalServerError)
 	}
+	sceneId := database.Int64(sceneIdInt64)
 	layerName := ctx.Params("layerName")
 	if sceneId == 0 || layerName == "" {
 		return ctx.SendStatus(fiber.StatusNotFound)

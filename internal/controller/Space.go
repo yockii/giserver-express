@@ -33,7 +33,10 @@ func (*spaceController) Add(ctx *fiber.Ctx) error {
 		return ctx.SendStatus(fiber.StatusInternalServerError)
 	}
 	if d {
-		return ctx.JSON(&server.CommonResponse{})
+		return ctx.JSON(&server.CommonResponse{
+			Code: -1,
+			Msg:  "name duplicated",
+		})
 	} else {
 		return ctx.JSON(&server.CommonResponse{
 			Data: space.Id,

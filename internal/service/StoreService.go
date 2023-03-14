@@ -13,12 +13,12 @@ import (
 
 var StoreService = &storeService{
 	cacheByName: make(map[string]*model.Store),
-	cacheById:   make(map[int64]*model.Store),
+	cacheById:   make(map[database.Int64]*model.Store),
 }
 
 type storeService struct {
 	cacheByName map[string]*model.Store
-	cacheById   map[int64]*model.Store
+	cacheById   map[database.Int64]*model.Store
 }
 
 func (s *storeService) Add(store *model.Store) (duplicated bool, err error) {
@@ -34,7 +34,7 @@ func (s *storeService) Add(store *model.Store) (duplicated bool, err error) {
 		duplicated = true
 		return
 	}
-	store.Id = util.SnowflakeId()
+	store.Id = database.Int64(util.SnowflakeId())
 
 	var omitCols []string
 	if store.Name == "" {
@@ -68,7 +68,7 @@ func (s *storeService) Update(store *model.Store) error {
 	return nil
 }
 
-func (*storeService) Delete(id int64) (err error) {
+func (*storeService) Delete(id database.Int64) (err error) {
 	sess := database.DB.NewSession()
 	sess.Begin()
 	defer sess.Close()
@@ -130,7 +130,7 @@ func (s *storeService) FindByName(name string) (*model.Store, error) {
 	return nil, nil
 }
 
-func (s *storeService) GetById(id int64) (*model.Store, error) {
+func (s *storeService) GetById(id database.Int64) (*model.Store, error) {
 	store := s.getFromCacheById(id)
 	if store != nil {
 		return store, nil
@@ -155,7 +155,7 @@ func (s *storeService) getFromCacheByName(storeName string) *model.Store {
 	}
 	return store
 }
-func (s *storeService) getFromCacheById(id int64) *model.Store {
+func (s *storeService) getFromCacheById(id database.Int64) *model.Store {
 	store, ok := s.cacheById[id]
 	if !ok {
 		return nil

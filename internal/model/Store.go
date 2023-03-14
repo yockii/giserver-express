@@ -3,7 +3,7 @@ package model
 import "github.com/yockii/giserver-express/pkg/database"
 
 type Store struct {
-	Id              int64             `json:"id,omitempty" xorm:"pk"`
+	Id              database.Int64    `json:"id,omitempty" xorm:"pk"`
 	Name            string            `json:"name,omitempty"`
 	StoreType       int               `json:"storeType" xorm:"default(1) comment('存储类型 0-本地文件 1-oss')"`
 	Endpoint        string            `json:"endpoint,omitempty"`

@@ -33,7 +33,7 @@ func (s *sceneService) Add(sceneDomain *domain.Scene) (duplicated bool, err erro
 	}
 
 	scene := sceneDomain.Scene
-	scene.Id = util.SnowflakeId()
+	scene.Id = database.Int64(util.SnowflakeId())
 
 	var omitCols []string
 	if scene.ResourceConfigId == "" {
@@ -85,7 +85,7 @@ func (s *sceneService) Add(sceneDomain *domain.Scene) (duplicated bool, err erro
 			}
 		}
 		_, err = sess.Cols(cols...).Insert(&model.SceneAtmosphere{
-			Id:      util.SnowflakeId(),
+			Id:      database.Int64(util.SnowflakeId()),
 			SceneId: scene.Id,
 			Visible: visible,
 		})
@@ -97,7 +97,7 @@ func (s *sceneService) Add(sceneDomain *domain.Scene) (duplicated bool, err erro
 	{
 		cols := []string{"id", "scene_id"}
 		latLonGrid := &model.SceneLatLonGrid{
-			Id:      util.SnowflakeId(),
+			Id:      database.Int64(util.SnowflakeId()),
 			SceneId: scene.Id,
 		}
 		if sceneDomain.LatLonGrid != nil {
@@ -119,7 +119,7 @@ func (s *sceneService) Add(sceneDomain *domain.Scene) (duplicated bool, err erro
 	{
 		cols := []string{"id", "scene_id"}
 		camera := &model.SceneCamera{
-			Id:      util.SnowflakeId(),
+			Id:      database.Int64(util.SnowflakeId()),
 			SceneId: scene.Id,
 		}
 		if sceneDomain.Camera != nil {
@@ -157,7 +157,7 @@ func (s *sceneService) Add(sceneDomain *domain.Scene) (duplicated bool, err erro
 	{
 		cols := []string{"id", "scene_id"}
 		fog := &model.SceneFog{
-			Id:      util.SnowflakeId(),
+			Id:      database.Int64(util.SnowflakeId()),
 			SceneId: scene.Id,
 		}
 		if sceneDomain.Fog != nil {
@@ -326,7 +326,7 @@ func (*sceneService) Update(scene *domain.Scene) error {
 	return nil
 }
 
-func (*sceneService) Delete(id int64) (err error) {
+func (*sceneService) Delete(id database.Int64) (err error) {
 	sess := database.DB.NewSession()
 	sess.Begin()
 	defer sess.Close()
@@ -411,7 +411,7 @@ func (*sceneService) FindByName(name string) (*model.Scene, error) {
 	return nil, nil
 }
 
-func (*sceneService) FindSpaceScenes(spaceId int64) (scenes []*model.Scene, err error) {
+func (*sceneService) FindSpaceScenes(spaceId database.Int64) (scenes []*model.Scene, err error) {
 	err = database.DB.Cols("id", "name", "resource_config_id", "supported_media_types", "resource_type").Find(&scenes, &model.Scene{SpaceId: spaceId})
 	if err != nil {
 		logger.Errorln(err)
@@ -419,7 +419,7 @@ func (*sceneService) FindSpaceScenes(spaceId int64) (scenes []*model.Scene, err 
 	return
 }
 
-func (s *sceneService) GetRichSceneInfoById(sceneId int64) (*domain.Scene, error) {
+func (s *sceneService) GetRichSceneInfoById(sceneId database.Int64) (*domain.Scene, error) {
 	scene := &model.Scene{Id: sceneId}
 	exist, err := database.DB.Get(scene)
 	if err != nil {
@@ -536,7 +536,7 @@ func (*sceneService) AddSceneAtmosphere(atmosphere *model.SceneAtmosphere) (dupl
 		duplicated = true
 		return
 	}
-	atmosphere.Id = util.SnowflakeId()
+	atmosphere.Id = database.Int64(util.SnowflakeId())
 	_, err = database.DB.Insert(atmosphere)
 	if err != nil {
 		logger.Errorln(err)
@@ -556,7 +556,7 @@ func (*sceneService) AddSceneLatLonGrid(latLonGrid *model.SceneLatLonGrid) (dupl
 		duplicated = true
 		return
 	}
-	latLonGrid.Id = util.SnowflakeId()
+	latLonGrid.Id = database.Int64(util.SnowflakeId())
 	_, err = database.DB.Insert(latLonGrid)
 	if err != nil {
 		logger.Errorln(err)
@@ -576,7 +576,7 @@ func (*sceneService) AddSceneCamera(camera *model.SceneCamera) (duplicated bool,
 		duplicated = true
 		return
 	}
-	camera.Id = util.SnowflakeId()
+	camera.Id = database.Int64(util.SnowflakeId())
 	_, err = database.DB.Insert(camera)
 	if err != nil {
 		logger.Errorln(err)
@@ -596,7 +596,7 @@ func (*sceneService) AddSceneFog(fog *model.SceneFog) (duplicated bool, err erro
 		duplicated = true
 		return
 	}
-	fog.Id = util.SnowflakeId()
+	fog.Id = database.Int64(util.SnowflakeId())
 	_, err = database.DB.Insert(fog)
 	if err != nil {
 		logger.Errorln(err)

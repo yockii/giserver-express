@@ -27,7 +27,7 @@ func (*spaceService) Add(space *model.Space) (duplicated bool, err error) {
 		duplicated = true
 		return
 	}
-	space.Id = util.SnowflakeId()
+	space.Id = database.Int64(util.SnowflakeId())
 	_, err = database.DB.Insert(space)
 	if err != nil {
 		logger.Errorln(err)
@@ -47,7 +47,7 @@ func (*spaceService) Update(space *model.Space) error {
 	return err
 }
 
-func (*spaceService) Delete(id int64) (err error) {
+func (*spaceService) Delete(id database.Int64) (err error) {
 	sess := database.DB.NewSession()
 	sess.Begin()
 	defer sess.Close()

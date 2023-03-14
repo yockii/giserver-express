@@ -33,7 +33,7 @@ func (*dataService) Add(data *model.Data) (duplicated bool, err error) {
 		duplicated = true
 		return
 	}
-	data.Id = util.SnowflakeId()
+	data.Id = database.Int64(util.SnowflakeId())
 
 	var omitCols []string
 	if data.Name == "" {
@@ -62,7 +62,7 @@ func (*dataService) Update(data *model.Data) error {
 	return err
 }
 
-func (*dataService) Delete(id int64) (err error) {
+func (*dataService) Delete(id database.Int64) (err error) {
 	sess := database.DB.NewSession()
 	sess.Begin()
 	defer sess.Close()
@@ -119,7 +119,7 @@ func (*dataService) FindByName(name string) (*model.Data, error) {
 	return nil, nil
 }
 
-func (*dataService) FindSpaceDataList(spaceId int64) (datas []*model.Data, err error) {
+func (*dataService) FindSpaceDataList(spaceId database.Int64) (datas []*model.Data, err error) {
 	err = database.DB.Find(&datas, &model.Data{SpaceId: spaceId})
 	if err != nil {
 		logger.Errorln(err)
@@ -127,7 +127,7 @@ func (*dataService) FindSpaceDataList(spaceId int64) (datas []*model.Data, err e
 	return
 }
 
-func (s *dataService) GetBySpaceIdAndDataName(spaceId int64, dataType string, name string) (*model.Data, error) {
+func (s *dataService) GetBySpaceIdAndDataName(spaceId database.Int64, dataType string, name string) (*model.Data, error) {
 	data := &model.Data{
 		SpaceId: spaceId,
 		Name:    name,
@@ -149,7 +149,7 @@ func (s *dataService) GetBySpaceIdAndDataName(spaceId int64, dataType string, na
 	return nil, nil
 }
 
-func (s *dataService) GetById(id int64) (*model.Data, error) {
+func (s *dataService) GetById(id database.Int64) (*model.Data, error) {
 	data := &model.Data{Id: id}
 
 	exists, err := database.DB.Get(data)

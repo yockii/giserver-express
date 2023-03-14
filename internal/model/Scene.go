@@ -3,8 +3,8 @@ package model
 import "github.com/yockii/giserver-express/pkg/database"
 
 type Scene struct {
-	Id                  int64             `json:"id" xorm:"pk"`
-	SpaceId             int64             `json:"spaceId" xorm:"index"`
+	Id                  database.Int64    `json:"id" xorm:"pk"`
+	SpaceId             database.Int64    `json:"spaceId" xorm:"index"`
 	Name                string            `json:"name"`
 	ResourceConfigId    string            `json:"resourceConfigID" xorm:"default('scene')"`               // scene
 	SupportedMediaTypes string            `json:"supportedMediaTypes" xorm:"default('application/json')"` // ["application/xml","text/xml","application/json","application/fastjson","application/rjson","text/html","application/jsonp","application/x-java-serialized-object","application/realspace","application/openrealspace","application/scenezip"]
@@ -20,46 +20,46 @@ type Scene struct {
 }
 
 type SceneAtmosphere struct {
-	Id      int64 `json:"id,omitempty" xorm:"pk"`
-	SceneId int64 `json:"sceneId,omitempty" xorm:"index"`
-	Visible int   `json:"visible,omitempty" xorm:"default(1)"`
+	Id      database.Int64 `json:"id,omitempty" xorm:"pk"`
+	SceneId database.Int64 `json:"sceneId,omitempty" xorm:"index"`
+	Visible int            `json:"visible,omitempty" xorm:"default(1)"`
 }
 
 type SceneLatLonGrid struct {
-	Id          int64 `json:"id,omitempty" xorm:"pk"`
-	SceneId     int64 `json:"sceneId,omitempty" xorm:"index"`
-	Visible     int   `json:"visible,omitempty" xorm:"default(0)"`
-	TextVisible int   `json:"textVisible,omitempty" xorm:"default(1)"`
+	Id          database.Int64 `json:"id,omitempty" xorm:"pk"`
+	SceneId     database.Int64 `json:"sceneId,omitempty" xorm:"index"`
+	Visible     int            `json:"visible,omitempty" xorm:"default(0)"`
+	TextVisible int            `json:"textVisible,omitempty" xorm:"default(1)"`
 }
 
 type SceneCamera struct {
-	Id           int64   `json:"id,omitempty" xorm:"pk"`
-	SceneId      int64   `json:"sceneId,omitempty" xorm:"index"`
-	Altitude     float64 `json:"altitude" xorm:"default(312.24457270652056)"`
-	Latitude     float64 `json:"latitude" xorm:"default(45.766272055085)"`
-	Longitude    float64 `json:"longitude" xorm:"default(126.62133125438919)"`
-	Heading      float64 `json:"heading" xorm:"default(0.6557127322272999)"`
-	AltitudeMode string  `json:"altitudeMode" xorm:"default('ABSOLUTE')"`
-	Tilt         float64 `json:"tilt" xorm:"default(51.599254528603325)"`
-	Empty        int     `json:"empty" xorm:"default(-1)"`
+	Id           database.Int64 `json:"id,omitempty" xorm:"pk"`
+	SceneId      database.Int64 `json:"sceneId,omitempty" xorm:"index"`
+	Altitude     float64        `json:"altitude" xorm:"default(312.24457270652056)"`
+	Latitude     float64        `json:"latitude" xorm:"default(45.766272055085)"`
+	Longitude    float64        `json:"longitude" xorm:"default(126.62133125438919)"`
+	Heading      float64        `json:"heading" xorm:"default(0.6557127322272999)"`
+	AltitudeMode string         `json:"altitudeMode" xorm:"default('ABSOLUTE')"`
+	Tilt         float64        `json:"tilt" xorm:"default(51.599254528603325)"`
+	Empty        int            `json:"empty" xorm:"default(-1)"`
 }
 
 type SceneFog struct {
-	Id            int64   `json:"id,omitempty" xorm:"pk"`
-	SceneId       int64   `json:"sceneId,omitempty" xorm:"index"`
-	Mode          string  `json:"mode" xorm:"default('EXP')"`
-	EndDistance   float64 `json:"end_distance" xorm:"default(1)"`
-	StartDistance float64 `json:"start_distance" xorm:"default(0)"`
-	Color         string  `json:"color" xorm:"default('255,255,255,255')"`
-	Density       float64 `json:"density" xorm:"default(1)"`
-	Enable        int     `json:"enable" xorm:"default(-1)"`
+	Id            database.Int64 `json:"id,omitempty" xorm:"pk"`
+	SceneId       database.Int64 `json:"sceneId,omitempty" xorm:"index"`
+	Mode          string         `json:"mode" xorm:"default('EXP')"`
+	EndDistance   float64        `json:"end_distance" xorm:"default(1)"`
+	StartDistance float64        `json:"start_distance" xorm:"default(0)"`
+	Color         string         `json:"color" xorm:"default('255,255,255,255')"`
+	Density       float64        `json:"density" xorm:"default(1)"`
+	Enable        int            `json:"enable" xorm:"default(-1)"`
 }
 
 type SceneLayer struct {
-	Id                 int64             `json:"id,omitempty" xorm:"pk"`
-	SpaceId            int64             `json:"spaceId,omitempty"`
-	SceneId            int64             `json:"sceneId,omitempty" xorm:"index"`
-	DataId             int64             `json:"dataId"`
+	Id                 database.Int64    `json:"id,omitempty" xorm:"pk"`
+	SpaceId            database.Int64    `json:"spaceId,omitempty"`
+	SceneId            database.Int64    `json:"sceneId,omitempty" xorm:"index"`
+	DataId             database.Int64    `json:"dataId"`
 	Name               string            `json:"name" xorm:"default('Config')"`
 	MinVisibleAltitude float64           `json:"minVisibleAltitude" xorm:"default(0)"`
 	MaxVisibleAltitude float64           `json:"maxVisibleAltitude" xorm:"default(0)"`

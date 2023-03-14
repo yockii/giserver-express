@@ -43,7 +43,7 @@ func (*layerService) Add(layer *model.SceneLayer) (duplicated bool, err error) {
 	logger.Infoln("ready to add layer...")
 
 	layer.Name = data.DataName
-	layer.Id = util.SnowflakeId()
+	layer.Id = database.Int64(util.SnowflakeId())
 
 	var omitCols []string
 	if layer.MinVisibleAltitude == 0 {
@@ -102,7 +102,7 @@ func (*layerService) Update(layer *model.SceneLayer) error {
 	return err
 }
 
-func (*layerService) Delete(id int64) (err error) {
+func (*layerService) Delete(id database.Int64) (err error) {
 	sess := database.DB.NewSession()
 	sess.Begin()
 	defer sess.Close()
@@ -159,7 +159,7 @@ func (*layerService) FindByName(name string) (*model.SceneLayer, error) {
 	return nil, nil
 }
 
-func (*layerService) FindSceneLayers(sceneId int64) (layers []*model.SceneLayer, err error) {
+func (*layerService) FindSceneLayers(sceneId database.Int64) (layers []*model.SceneLayer, err error) {
 	err = database.DB.Find(&layers, &model.SceneLayer{SceneId: sceneId})
 	if err != nil {
 		logger.Errorln(err)
@@ -167,7 +167,7 @@ func (*layerService) FindSceneLayers(sceneId int64) (layers []*model.SceneLayer,
 	return
 }
 
-func (*layerService) FindSceneDomainLayers(sceneId int64) (list []*domain.SceneLayer, err error) {
+func (*layerService) FindSceneDomainLayers(sceneId database.Int64) (list []*domain.SceneLayer, err error) {
 	var layers []*model.SceneLayer
 	err = database.DB.Find(&layers, &model.SceneLayer{SceneId: sceneId})
 	if err != nil {
@@ -212,7 +212,7 @@ func (*layerService) FindSceneDomainLayers(sceneId int64) (list []*domain.SceneL
 	return list, nil
 }
 
-func (s *layerService) GetBySceneIdAndLayerName(sceneId int64, name string) (*model.SceneLayer, error) {
+func (s *layerService) GetBySceneIdAndLayerName(sceneId database.Int64, name string) (*model.SceneLayer, error) {
 	layer := &model.SceneLayer{
 		SceneId: sceneId,
 		Name:    name,
@@ -228,7 +228,7 @@ func (s *layerService) GetBySceneIdAndLayerName(sceneId int64, name string) (*mo
 	return nil, nil
 }
 
-func (s *layerService) GetBySpaceIdAndLayerName(spaceId int64, layerName string) (*model.SceneLayer, error) {
+func (s *layerService) GetBySpaceIdAndLayerName(spaceId database.Int64, layerName string) (*model.SceneLayer, error) {
 	layer := &model.SceneLayer{
 		SpaceId: spaceId,
 		Name:    layerName,

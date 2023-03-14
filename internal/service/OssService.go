@@ -7,12 +7,13 @@ import (
 
 	"github.com/yockii/giserver-express/internal/model"
 	"github.com/yockii/giserver-express/pkg/aliyun"
+	"github.com/yockii/giserver-express/pkg/database"
 )
 
-var OssService = &ossService{ossClients: make(map[int64]*aliyun.OssClient)}
+var OssService = &ossService{ossClients: make(map[database.Int64]*aliyun.OssClient)}
 
 type ossService struct {
-	ossClients map[int64]*aliyun.OssClient
+	ossClients map[database.Int64]*aliyun.OssClient
 }
 
 func (s *ossService) StreamFromStore(store *model.Store, objectKey string) (reader io.Reader, err error) {

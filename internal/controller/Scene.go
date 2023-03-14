@@ -9,6 +9,7 @@ import (
 	"github.com/yockii/giserver-express/internal/domain"
 	"github.com/yockii/giserver-express/internal/model"
 	"github.com/yockii/giserver-express/internal/service"
+	"github.com/yockii/giserver-express/pkg/database"
 	"github.com/yockii/giserver-express/pkg/server"
 )
 
@@ -34,7 +35,10 @@ func (*sceneController) Add(ctx *fiber.Ctx) error {
 		return ctx.SendStatus(fiber.StatusInternalServerError)
 	}
 	if d {
-		return ctx.JSON(&server.CommonResponse{})
+		return ctx.JSON(&server.CommonResponse{
+			Code: -1,
+			Msg:  "sceneId & name duplicated",
+		})
 	} else {
 		return ctx.JSON(&server.CommonResponse{
 			Data: scene.Id,
@@ -86,11 +90,12 @@ func (*sceneController) List(ctx *fiber.Ctx) error {
 
 func (c *sceneController) SceneInfo(ctx *fiber.Ctx) error {
 	sceneIdStr := ctx.Params("sceneId")
-	sceneId, err := strconv.ParseInt(sceneIdStr, 10, 64)
+	sceneIdInt64, err := strconv.ParseInt(sceneIdStr, 10, 64)
 	if err != nil {
 		logger.Errorln(err)
 		return ctx.SendStatus(fiber.StatusInternalServerError)
 	}
+	sceneId := database.Int64(sceneIdInt64)
 	var scene *domain.Scene
 	scene, err = service.SceneService.GetRichSceneInfoById(sceneId)
 	if err != nil {
@@ -112,11 +117,12 @@ func (c *sceneController) SceneInfo(ctx *fiber.Ctx) error {
 
 func (c *sceneController) SceneLayers(ctx *fiber.Ctx) error {
 	sceneIdStr := ctx.Params("sceneId")
-	sceneId, err := strconv.ParseInt(sceneIdStr, 10, 64)
+	sceneIdInt64, err := strconv.ParseInt(sceneIdStr, 10, 64)
 	if err != nil {
 		logger.Errorln(err)
 		return ctx.SendStatus(fiber.StatusInternalServerError)
 	}
+	sceneId := database.Int64(sceneIdInt64)
 	var layers []*domain.SceneLayer
 	layers, err = service.LayerService.FindSceneDomainLayers(sceneId)
 	if err != nil {
