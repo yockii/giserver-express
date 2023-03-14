@@ -24,6 +24,7 @@
 代理中务必设置 Host的header，否则程序无法获取到真实的请求地址host，如nginx中：
 ```
 proxy_set_header Host $host_name;
+proxy_set_header X-Forwarded-Proto $scheme;
 ```
 
 ## 调用地址
