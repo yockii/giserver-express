@@ -8,9 +8,10 @@ import (
 
 type Int64 int64
 
-//func (i Int64) String() string {
-//	return strconv.FormatInt(int64(i), 10)
-//}
+func (i Int64) String() string {
+	return strconv.FormatInt(int64(i), 10)
+}
+
 //func (i Int64) Value() (driver.Value, error) {
 //	return int64(i), nil
 //}

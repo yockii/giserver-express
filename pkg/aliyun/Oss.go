@@ -34,7 +34,7 @@ func NewOssClient(endpoint, bucketName, accessKeyId, accessKeySecret string, sel
 func (c *OssClient) ReadStream(objectKey string) (io.ReadCloser, error) {
 	body, err := c.Bucket.GetObject(objectKey)
 	if err != nil {
-		logger.Errorln(err)
+		logger.Errorln("["+objectKey+"],", err)
 		return nil, err
 	}
 	return body, nil

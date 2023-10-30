@@ -1,12 +1,11 @@
 package server
 
 import (
+	"github.com/gofiber/fiber/v2"
 	"net"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/gofiber/template/html"
 	logger "github.com/sirupsen/logrus"
 
 	"github.com/yockii/giserver-express/pkg/config"
@@ -23,15 +22,8 @@ func init() {
 	initServerDefault()
 
 	initFiberParser()
-	if config.GetString("server.viewsDir") != "" {
-		extension := config.GetString("server.viewExtension")
-		if extension == "" {
-			extension = ".html"
-		}
-		defaultApp = InitWebApp(html.New(config.GetString("server.viewsDir"), extension))
-	} else {
-		defaultApp = InitWebApp(nil)
-	}
+
+	defaultApp = InitWebApp(nil)
 }
 
 func initServerDefault() {

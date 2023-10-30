@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"strings"
+	"sync"
 
 	logger "github.com/sirupsen/logrus"
 
@@ -17,6 +18,7 @@ var DataService = &dataService{
 
 type dataService struct {
 	scpCache map[string]map[string]map[string]*model.Data
+	lock     sync.Mutex
 }
 
 func (*dataService) Add(data *model.Data) (duplicated bool, err error) {
@@ -181,6 +183,9 @@ func (s *dataService) GetFromCache(spaceName string, dataType string, dataName s
 }
 
 func (s *dataService) Cache(spaceName string, dataType string, data *model.Data) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
 	spaceDataMap, hasSpace := s.scpCache[spaceName]
 	if !hasSpace || spaceDataMap == nil {
 		spaceDataMap = make(map[string]map[string]*model.Data)

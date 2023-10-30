@@ -1,15 +1,15 @@
 [database]
-db = 'giserver'
+db = 'gis-express'
 driver = 'mysql'
-host = '192.168.1.8'
-password = 'giserver'
-port = 31964
+host = 'localhost'
+password = 'root'
+port = 3306
 prefix = 't_'
 showsql = true
-user = 'gis'
+user = 'root'
 
 [logger]
 level = 'debug'
 
 [server]
-port = 8080
+port = 38080

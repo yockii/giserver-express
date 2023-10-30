@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"sync"
 
 	logger "github.com/sirupsen/logrus"
 
@@ -19,6 +20,7 @@ var StoreService = &storeService{
 type storeService struct {
 	cacheByName map[string]*model.Store
 	cacheById   map[database.Int64]*model.Store
+	lock        sync.Mutex
 }
 
 func (s *storeService) Add(store *model.Store) (duplicated bool, err error) {
@@ -164,6 +166,8 @@ func (s *storeService) getFromCacheById(id database.Int64) *model.Store {
 }
 
 func (s *storeService) cache(store *model.Store) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
 	s.cacheByName[store.Name] = store
 	s.cacheById[store.Id] = store
 }
