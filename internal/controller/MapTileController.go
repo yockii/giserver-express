@@ -86,25 +86,13 @@ func (*mapTileController) List(ctx *fiber.Ctx) error {
 }
 
 func (c *mapTileController) GetFile(ctx *fiber.Ctx) error {
-	vtName := ctx.Params("name")
-	d0 := ctx.Params("d0")
-	d1 := ctx.Params("d1")
-	d2 := ctx.Params("d2")
-	d3 := ctx.Params("fileName")
-
+	df := ctx.Params("*")
+	dfArray := strings.Split(df, "/")
 	var dp []string
-	if d0 != "" {
-		dp = append(dp, d0)
+	for _, s := range dfArray {
+		dp = append(dp, s)
 	}
-	if d1 != "" {
-		dp = append(dp, d1)
-	}
-	if d2 != "" {
-		dp = append(dp, d2)
-	}
-	if d3 != "" {
-		dp = append(dp, d3)
-	}
+	vtName := ctx.Params("name")
 
 	requestFileName := dp[len(dp)-1]
 	ct := fiber.MIMEOctetStream

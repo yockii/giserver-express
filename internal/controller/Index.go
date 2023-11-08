@@ -64,9 +64,10 @@ func InitRouter() {
 		//server.Get("/giservices/vectortile/maps/:name/sprites/sprite.json", VectorTileController.GetSpriteJson)
 		server.Get("/giservices/vectortile/maps/:name/style.json", VectorTileController.GetStyleJson)
 		server.Get("/giservices/vectortile/maps/:name/tileFeature/vectorstyles.json", VectorTileController.GetStyleJson)
-		server.Get("/giservices/vectortile/maps/:name/:d0/:d1", VectorTileController.GetMvtFile)
-		server.Get("/giservices/vectortile/maps/:name/:d0/:d1/:d2", VectorTileController.GetMvtFile)
-		server.Get("/giservices/vectortile/maps/:name/:d0/:d1/:d2/:fileName", VectorTileController.GetMvtFile)
+		server.Get("/giservices/vectortile/maps/:name/*", VectorTileController.GetMvtFile)
+		//server.Get("/giservices/vectortile/maps/:name/:d0/:d1", VectorTileController.GetMvtFile)
+		//server.Get("/giservices/vectortile/maps/:name/:d0/:d1/:d2", VectorTileController.GetMvtFile)
+		//server.Get("/giservices/vectortile/maps/:name/:d0/:d1/:d2/:fileName", VectorTileController.GetMvtFile)
 	}
 	//////////
 
@@ -99,7 +100,7 @@ func InitRouter() {
 
 	// 3dtiles适配
 	{
-		server.Get("/giservices/3dt/:name/:d0/:d1/:d2/:fileName", MapTileController.GetFile)
+		server.Get("/giservices/3dt/:name/*", MapTileController.GetFile)
 
 		// 单场景多个图层处理，tileset.json
 		//	{
