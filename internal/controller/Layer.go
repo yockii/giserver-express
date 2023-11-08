@@ -147,7 +147,7 @@ func (c *layerController) LayerConfig(ctx *fiber.Ctx) error {
 	}
 
 	// 找到config路径，返回
-	if data.DataStoreTypeId == 0 {
+	if data.DataStoreTypeId == -1 {
 		return ctx.SendFile(path.Join(data.DataConfigPath, data.DataName))
 	} else {
 		store, err := service.StoreService.GetById(data.DataStoreTypeId)
@@ -203,7 +203,7 @@ func (c *layerController) TileFile(ctx *fiber.Ctx) error {
 		ctx.Set(fiber.HeaderContentType, "application/s3m")
 	}
 
-	if data.DataStoreTypeId == 0 {
+	if data.DataStoreTypeId == -1 {
 		return c.sendFromLocalFile(ctx, data, fold, file)
 	} else {
 		store, err := service.StoreService.GetById(data.DataStoreTypeId)
@@ -211,7 +211,7 @@ func (c *layerController) TileFile(ctx *fiber.Ctx) error {
 			return ctx.SendStatus(fiber.StatusInternalServerError)
 		}
 		if store != nil {
-			if store.StoreType == 0 {
+			if store.StoreType == -1 {
 				return c.sendFromLocalFile(ctx, data, fold, file)
 			} else if store.StoreType == 1 {
 				objectKey := store.Path + data.DataConfigPath + "/" + fold + "/" + file

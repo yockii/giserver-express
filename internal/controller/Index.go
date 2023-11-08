@@ -8,7 +8,7 @@ import (
 )
 
 func InitRouter() {
-	{
+	{ // 管理
 		manage := server.Group("/manage")
 		store := manage.Group("/store")
 		store.Post("/", StoreController.Add)
@@ -34,6 +34,18 @@ func InitRouter() {
 		layer.Post("/", LayerController.Add)
 		layer.Put("/", LayerController.Update)
 		layer.Get("/list", LayerController.List)
+
+		mvt := manage.Group("/mvt")
+		mvt.Post("/", VectorTileController.Add)
+		mvt.Put("/", VectorTileController.Update)
+		mvt.Get("/list", VectorTileController.List)
+		mvt.Delete("/cache", VectorTileController.DeleteCache)
+
+		mt := manage.Group("/3dtiles")
+		mt.Post("/", MapTileController.Add)
+		mt.Put("/", MapTileController.Update)
+		mt.Get("/list", MapTileController.List)
+		mt.Delete("/cache", MapTileController.DeleteCache)
 	}
 
 	space := server.Group("/giservices/space")
@@ -44,6 +56,19 @@ func InitRouter() {
 	scene.Get("/:sceneId/layers.json", SceneController.SceneLayers)
 	scene.Get("/:sceneId", SceneController.SceneInfo).Name("scene.info")
 	scene.Get("/:sceneId/layers/:layerName/extendxml.xml", LayerController.GetLayerExtendXml)
+
+	// 矢量瓦片
+	{ // iserver适配
+
+		server.Get("/giservices/vectortile/maps/:name", VectorTileController.VectorTileInfo)
+		//server.Get("/giservices/vectortile/maps/:name/sprites/sprite.json", VectorTileController.GetSpriteJson)
+		server.Get("/giservices/vectortile/maps/:name/style.json", VectorTileController.GetStyleJson)
+		server.Get("/giservices/vectortile/maps/:name/tileFeature/vectorstyles.json", VectorTileController.GetStyleJson)
+		server.Get("/giservices/vectortile/maps/:name/:d0/:d1", VectorTileController.GetMvtFile)
+		server.Get("/giservices/vectortile/maps/:name/:d0/:d1/:d2", VectorTileController.GetMvtFile)
+		server.Get("/giservices/vectortile/maps/:name/:d0/:d1/:d2/:fileName", VectorTileController.GetMvtFile)
+	}
+	//////////
 
 	// iserver适配
 	{
@@ -74,6 +99,8 @@ func InitRouter() {
 
 	// 3dtiles适配
 	{
+		server.Get("/giservices/3dt/:name/:d0/:d1/:d2/:fileName", MapTileController.GetFile)
+
 		// 单场景多个图层处理，tileset.json
 		//	{
 		//		"asset": {

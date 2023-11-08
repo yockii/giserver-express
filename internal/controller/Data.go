@@ -116,7 +116,7 @@ func (c *dataController) DataFile(ctx *fiber.Ctx) error {
 		service.DataService.Cache(spaceName, data.DataType, data)
 	}
 
-	if data.DataStoreTypeId == 0 {
+	if data.DataStoreTypeId == -1 {
 		return c.sendFromLocalFile(ctx, data, data.DataName)
 	} else {
 		store, err := service.StoreService.GetById(data.DataStoreTypeId)
@@ -124,7 +124,7 @@ func (c *dataController) DataFile(ctx *fiber.Ctx) error {
 			return ctx.SendStatus(fiber.StatusInternalServerError)
 		}
 		if store != nil {
-			if store.StoreType == 0 {
+			if store.StoreType == -1 {
 				return c.sendFromLocalFile(ctx, data, suffix)
 			} else if store.StoreType == 1 {
 				objectKey := store.Path + data.DataConfigPath + "/" + data.DataName

@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/aliyun/aliyun-oss-go-sdk v2.2.10+incompatible
+	github.com/beevik/etree v1.2.0
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/gofiber/fiber/v2 v2.50.0
@@ -13,6 +14,7 @@ require (
 	github.com/segmentio/fasthash v1.0.3
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/viper v1.17.0
+	github.com/tidwall/sjson v1.2.5
 	modernc.org/sqlite v1.26.0
 	xorm.io/xorm v1.3.4
 )
@@ -53,6 +55,9 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/syndtr/goleveldb v1.0.0 // indirect
 	github.com/tebeka/strftime v0.1.5 // indirect
+	github.com/tidwall/gjson v1.14.2 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.50.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
