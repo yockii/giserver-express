@@ -3,19 +3,27 @@ package controller
 import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"github.com/segmentio/ksuid"
 	logger "github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 	"github.com/yockii/giserver-express/internal/model"
 	"github.com/yockii/giserver-express/internal/service"
 	"github.com/yockii/giserver-express/pkg/server"
+	"github.com/yockii/giserver-express/pkg/util"
 	"io"
 	"strings"
+	"sync"
 )
 
-var VectorTileController = new(vectorTileController)
+var VectorTileController = &vectorTileController{
+	mapRand: make(map[string]string),
+}
 
-type vectorTileController struct{}
+type vectorTileController struct {
+	mapRand map[string]string
+	lock    sync.Mutex
+}
 
 func (*vectorTileController) Add(ctx *fiber.Ctx) error {
 	vt := new(model.VectorTile)
@@ -200,6 +208,12 @@ func (c *vectorTileController) GetMvtFile(ctx *fiber.Ctx) error {
 	ct := fiber.MIMEApplicationJSONCharsetUTF8
 	if strings.HasSuffix(requestFileName, ".mvt") {
 		ct = "application/mvt"
+		// 检查etag
+		fileTagInfo := util.HashHex(c.getRand(vtName) + "|" + ctx.Path())
+		if ctx.Get(fiber.HeaderIfNoneMatch) == fileTagInfo {
+			return ctx.SendStatus(fiber.StatusNotModified)
+		}
+		ctx.Set(fiber.HeaderETag, fileTagInfo)
 	} else if strings.HasSuffix(requestFileName, ".png") {
 		ct = "image/png"
 	}
@@ -215,12 +229,30 @@ func (c *vectorTileController) GetMvtFile(ctx *fiber.Ctx) error {
 		}
 		return ctx.SendStatus(fiber.StatusNotFound)
 	}
-	ctx.Set(fiber.HeaderCacheControl, "max-age=10800")
+	ctx.Set(fiber.HeaderCacheControl, "max-age=86400")
 	return ctx.SendStream(reader)
 }
 
 func (c *vectorTileController) DeleteCache(ctx *fiber.Ctx) error {
 	name := ctx.Query("name")
+	c.clearCache(name)
 	service.VectorTileService.ClearCache(name)
 	return ctx.JSON(server.CommonResponse{Data: "OK"})
+}
+
+func (c *vectorTileController) getRand(name string) string {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	if rand, ok := c.mapRand[name]; ok && rand != "" {
+		return rand
+	}
+
+	rand := ksuid.New().String()
+	c.mapRand[name] = rand
+	return rand
+}
+func (c *vectorTileController) clearCache(name string) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	delete(c.mapRand, name)
 }

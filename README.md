@@ -4,8 +4,9 @@
 目前主要用于Cesium（超图改）的测试
 
 功能：
-- [ ] 适配超图切片缓存
-- [ ] 适配开源切片缓存
+- [x] 适配超图切片缓存
+- [x] 适配开源切片缓存(3dtiles)
+- [x] 适配矢量瓦片
 
 ## 使用
 1. 创建自定义空间，如名称为 testSpace 
@@ -37,3 +38,9 @@ scene.open(
 http://localhost:8080/giservices/{自定义空间名称}/data/{文件}
 如
 http://localhost:8080/giservices/testSpace/data/roads.kml
+
+超图加载矢量瓦片：
+http://localhost:8080/giservices/vectortile/maps/{矢量瓦片信息名}
+
+3dtiles地址
+http://localhost:8080/giservices/3dt/{3dt瓦片信息名}/tileset.json

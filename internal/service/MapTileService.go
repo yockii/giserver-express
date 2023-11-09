@@ -184,11 +184,9 @@ func (s *mapTileService) ReadFile(name string, dirAndFile ...string) (io.Reader,
 			if errors.Is(err, os.ErrNotExist) {
 				return nil, nil
 			}
-			if e, ok := err.(*os.PathError); ok && e.Err == syscall.ENOSPC {
+			var e *os.PathError
+			if errors.As(err, &e) && e.Err == syscall.ENOSPC {
 				return nil, nil
-			} else {
-				logger.Errorln(err)
-				return nil, err
 			}
 		}
 		return file, nil

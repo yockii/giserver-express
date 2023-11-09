@@ -415,11 +415,9 @@ func (s *vectorTileService) ReadMvtFile(name string, dirAndFile ...string) (io.R
 			if errors.Is(err, os.ErrNotExist) {
 				return nil, nil
 			}
-			if e, ok := err.(*fs.PathError); ok && e.Err == syscall.ENOSPC {
+			var e *fs.PathError
+			if errors.As(err, &e) && e.Err == syscall.ENOSPC {
 				return nil, nil
-			} else {
-				logger.Errorln(err)
-				return nil, err
 			}
 		}
 		return file, nil
