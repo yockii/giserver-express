@@ -426,7 +426,9 @@ func (s *vectorTileService) ReadMvtFile(name string, dirAndFile ...string) (io.R
 	} else if store.StoreType == 1 {
 		objectKey := store.Path + vt.PathName
 		for _, p := range dirAndFile {
-			objectKey += "/" + p
+			if len(p) > 0 {
+				objectKey += "/" + p
+			}
 		}
 		var reader io.Reader
 		reader, err = OssService.StreamFromStore(store, objectKey)

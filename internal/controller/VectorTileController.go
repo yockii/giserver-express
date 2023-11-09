@@ -158,7 +158,7 @@ func (c *vectorTileController) GetSpriteJson(ctx *fiber.Ctx) error {
 func (c *vectorTileController) GetStyleJson(ctx *fiber.Ctx) error {
 	vtName := ctx.Params("name")
 
-	reader, err := service.VectorTileService.ReadMvtFile(vtName, "", "styles", "style.json")
+	reader, err := service.VectorTileService.ReadMvtFile(vtName, "styles", "style.json")
 	if err != nil {
 		return ctx.SendStatus(fiber.StatusInternalServerError)
 	}
